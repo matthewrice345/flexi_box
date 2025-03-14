@@ -1,4 +1,3 @@
-import 'package:flexi_box/src/models/flexi_snap.dart';
 import 'package:flexi_box/src/models/flexi_state.dart';
 import 'package:flutter/material.dart';
 
@@ -11,19 +10,19 @@ class FlexiController extends ChangeNotifier {
     bool fixedAspectRatio = false,
     bool initialMoveEnabled = true,
     bool initialScaleEnabled = true,
-    FlexiSnap snap = const FlexiSnap(),
     Size? minSize,
+    double distanceThreshold = 0.05,
   })  : _fixedAspectRatio = fixedAspectRatio,
         _moveEnabled = initialMoveEnabled,
         _scaleEnabled = initialScaleEnabled,
         _minSize = minSize ?? const Size(100, 100),
-        _snap = snap,
+        _distanceThreshold = distanceThreshold,
         _state = state ??
             FlexiState(
               offset: initialOffset,
               size: initialSize,
               rotation: initialRotation,
-            );
+            ), assert(distanceThreshold >= 0 && distanceThreshold <= 0.5);
 
   late FlexiState _state;
 
@@ -49,11 +48,11 @@ class FlexiController extends ChangeNotifier {
     notifyListeners();
   }
 
-  FlexiSnap get snap => _snap;
-  FlexiSnap _snap = FlexiSnap();
+  double get distanceThreshold => _distanceThreshold;
+  double _distanceThreshold = 0.05;
 
-  set snap(FlexiSnap value) {
-    _snap = value;
+  set distanceThreshold(double value) {
+    _distanceThreshold = value;
     notifyListeners();
   }
 

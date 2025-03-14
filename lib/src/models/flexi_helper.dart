@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flexi_box/src/models/flexi_data.dart';
-import 'package:flexi_box/src/models/flexi_snap.dart';
 import 'package:flexi_box/src/models/flexi_state.dart';
 import 'package:flutter/material.dart';
 
@@ -240,7 +239,6 @@ class FlexiHelper {
     required Degree rotation,
     required bool fixedAspectRatio,
     required Size minSize,
-    required FlexiSnap snap,
   }) {
     final scaleInfoAfterCalculation = FlexiHelper.getScaleInfo(
       current: FlexiInfo(

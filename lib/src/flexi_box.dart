@@ -53,9 +53,12 @@ class _FlexiBoxState extends State<FlexiBox> {
       child: GestureItem(
         onPanUpdate: (details) {
           if (controller.moveEnabled) {
+            final delta = details.delta;
+            if(delta.distance < controller.distanceThreshold) {
+              return;
+            }
+
             final updatedOffset = FlexiHelper.calculateNewOffset(details, controller.offset);
-            // Prevents small movements from being registered as a drag
-            if(updatedOffset.dx < 2 || updatedOffset.dy < 2) return;
             controller.updateData(offset: updatedOffset);
           }
         },
@@ -85,6 +88,10 @@ class _FlexiBoxState extends State<FlexiBox> {
   }
 
   void _handleDragChanges(DragUpdateDetails details, FlexiAlignment alignment) {
+    if(details.delta.distance < controller.distanceThreshold) {
+      return;
+    }
+
     final changes = FlexiHelper.calculateNewSize(
       details,
       alignment,
@@ -93,7 +100,6 @@ class _FlexiBoxState extends State<FlexiBox> {
       rotation: controller.rotation,
       fixedAspectRatio: controller.fixedAspectRatio,
       minSize: controller.minSize,
-      snap: controller.snap,
     );
 
     if (changes != null) {
@@ -183,18 +189,27 @@ class ScalableItem extends StatelessWidget {
     required this.child,
     required this.handleBuilder,
     required this.controller,
-    this.onBottomRightDrag,
-    this.onTopRightDrag,
-    this.onTopLeftDrag,
-    this.onBottomLeftDrag,
+    required this.onBottomRightDrag,
+    required this.onTopRightDrag,
+    required this.onTopLeftDrag,
+    required this.onBottomLeftDrag,
+    this.onEndBottomRightDrag,
+    this.onEndTopRightDrag,
+    this.onEndTopLeftDrag,
+    this.onEndBottomLeftDrag,
   });
 
   final Widget child;
   final FlexiController controller;
-  final Function(DragUpdateDetails)? onBottomRightDrag;
-  final Function(DragUpdateDetails)? onTopRightDrag;
-  final Function(DragUpdateDetails)? onTopLeftDrag;
-  final Function(DragUpdateDetails)? onBottomLeftDrag;
+  final Function(DragUpdateDetails) onBottomRightDrag;
+  final Function(DragUpdateDetails) onTopRightDrag;
+  final Function(DragUpdateDetails) onTopLeftDrag;
+  final Function(DragUpdateDetails) onBottomLeftDrag;
+  final Function(DragEndDetails)? onEndBottomRightDrag;
+  final Function(DragEndDetails)? onEndTopRightDrag;
+  final Function(DragEndDetails)? onEndTopLeftDrag;
+  final Function(DragEndDetails)? onEndBottomLeftDrag;
+
   final HandleBuilder handleBuilder;
 
   @override
@@ -205,33 +220,37 @@ class ScalableItem extends StatelessWidget {
         Positioned.fill(
           child: child,
         ),
-        if (onBottomRightDrag != null && controller.scaleEnabled)
+        if (controller.scaleEnabled)
           GestureDetector(
-            onPanUpdate: (details) => onBottomRightDrag!(details),
+            onPanUpdate: (details) => onBottomRightDrag(details),
+            onPanEnd: (details) => onEndBottomRightDrag?.call(details),
             child: Container(
               alignment: Alignment.bottomRight,
               child: handleBuilder(context, FlexiAlignment.bottomRight),
             ),
           ),
-        if (onTopRightDrag != null && controller.scaleEnabled)
+        if (controller.scaleEnabled)
           GestureDetector(
-            onPanUpdate: (details) => onTopRightDrag!(details),
+            onPanUpdate: (details) => onTopRightDrag(details),
+            onPanEnd: (details) => onEndTopRightDrag?.call(details),
             child: Container(
               alignment: Alignment.topRight,
               child: handleBuilder(context, FlexiAlignment.topRight),
             ),
           ),
-        if (onBottomLeftDrag != null && controller.scaleEnabled)
+        if (controller.scaleEnabled)
           GestureDetector(
-            onPanUpdate: (details) => onBottomLeftDrag!(details),
+            onPanUpdate: (details) => onBottomLeftDrag(details),
+            onPanEnd: (details) => onEndBottomLeftDrag?.call(details),
             child: Container(
               alignment: Alignment.bottomLeft,
               child: handleBuilder(context, FlexiAlignment.bottomLeft),
             ),
           ),
-        if (onTopLeftDrag != null && controller.scaleEnabled)
+        if (controller.scaleEnabled)
           GestureDetector(
-            onPanUpdate: (details) => onTopLeftDrag!(details),
+            onPanUpdate: (details) => onTopLeftDrag(details),
+            onPanEnd: (details) => onEndTopLeftDrag?.call(details),
             child: Container(
               alignment: Alignment.topLeft,
               child: handleBuilder(context, FlexiAlignment.topLeft),
